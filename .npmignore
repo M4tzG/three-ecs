@@ -1,8 +1,4 @@
-# .npmignore
-
-# Arquivos que não precisam ir para o pacote final do npm
 .git
 .gitignore
 node_modules/
 tests/
-# e qualquer outra pasta que seja apenas para o desenvolvimento local

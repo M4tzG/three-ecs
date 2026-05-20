@@ -4,13 +4,13 @@
   "description": "",
   "license": "ISC",
   "author": "",
-  "type": "commonjs",
+  "type": "module",
   "main": "src/Engine.js",
   "types": "src/Engine.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "dependencies": {
+  "peerDependencies": {
     "three": "^0.184.0"
   }
 }
