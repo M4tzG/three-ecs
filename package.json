@@ -6,6 +6,7 @@
   "author": "",
   "type": "commonjs",
   "main": "src/Engine.js",
+  "types": "src/Engine.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
