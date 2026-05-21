@@ -1,5 +1,10 @@
 
 export class Engine {
     constructor();
-    test(): string;
+    init(): void;
+    initScene(): void;
+    mainLoop(): void;
+    enableGyroscope(): void;
+    sleep(): void;
+    wake(): void;
 }

@@ -1,7 +1,7 @@
 import { createSprite } from "../factories/createSprite";
 import { createPostProcessing } from "../factories/createPostProcessing";
 import { createAnimatedSprite } from "../factories/createAnimatedSprite";
-import { createChain } from "../factories/createChain";
+// import { createChain } from "../factories/createChain";
 import { createCamera } from "../factories/createCamera";
 
 export function runScene(world, scene, assets, data)  {

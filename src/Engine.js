@@ -1,4 +1,20 @@
 import * as THREE from "three"
+
+import {
+    InputSystem,
+    EffectSystem,
+    AnimationSystem,
+    PickingSystem,
+    ChainRenderSystem,
+    VerletPhysicsSystem,
+    ConstraintSystem,
+    RenderSystem,
+    PostProcessingSystem,
+    CameraSystem
+} from "./systems/index";
+
+import { World } from "./ecs/World";
+import { runScene } from "./run/runScene";
 import { loadAssets } from "./run/loadAssets";
 import { showNoWebGLFallback } from "./ui/fallbacks";
 
@@ -6,7 +22,7 @@ export default class Engine {
     constructor(canvas, options = {}){
     // ----------------
         this.canvas = canvas;
-        this.webGL = this.checkWebGLSupport();
+        this.webGL = this._checkWebGLSupport();
 
     
     // ----------------
@@ -27,7 +43,6 @@ export default class Engine {
 
     // ----------------
 
-        this.mainCamera = null;
         this.renderer = null;
         this.assets = null;
         this.currentScene = null;
@@ -39,8 +54,9 @@ export default class Engine {
         this.animationFrameId = null;
 
 
-        this.resizeHandler = this.onWindowResize.bind(this);
-        this.visibilityHandler = this.onWindowChange.bind(this);
+        this.resizeHandler = this._onWindowResize.bind(this);
+        this.visibilityHandler = this._onWindowChange.bind(this);
+
     }
 
     async init(assets) {
@@ -89,6 +105,58 @@ export default class Engine {
         this.mainLoop();
     }
 
+    _initSystems(){
+
+
+    // ----------------
+        this.currentWorld.addSystem(this.inputSystem);
+        this.currentWorld.addSystem(new EffectSystem());
+        this.currentWorld.addSystem(new CameraSystem());
+
+    // ----------------
+
+        this.currentWorld.addSystem(new PickingSystem(this.currentScene)); // ta ruim...
+
+
+    // ----------------
+        this.currentWorld.addSystem(new AnimationSystem(this.renderer, this.currentScene));
+
+    // ----------------
+        this.currentWorld.addSystem(new VerletPhysicsSystem());
+        this.currentWorld.addSystem(new ConstraintSystem());
+        this.currentWorld.addSystem(new ChainRenderSystem());
+
+    // ----------------
+        this.currentWorld.addSystem(new RenderSystem(this.renderer, this.currentScene));
+
+    // ----------------
+
+        this.currentWorld.addSystem(new PostProcessingSystem(this.renderer, this.currentScene));
+
+    }
+
+    initScene(data) {
+        if (this.currentScene) {
+            this.currentScene.clear();
+        }
+        if (this.currentWorld) { // inputSystem -> windowListener acumula
+            this.currentWorld.dispose();
+            this.currentWorld = null; 
+        }
+
+    // ----------------
+        this.currentScene = new THREE.Scene();
+        this.currentWorld = new World();
+        this.inputSystem = new InputSystem();
+
+        this._initSystems();
+    // ----------------
+        if (data) {
+            runScene(this.currentWorld, this.currentScene, this.assets, data);
+        }
+        
+    }
+
 
     mainLoop = () => {
         if (!this.isRunning) return;
@@ -109,13 +177,21 @@ export default class Engine {
         this.animationFrameId = requestAnimationFrame(this.mainLoop);
     }
 
-// [=============================================================]
-    onWindowResize(){
 
-    this.renderer.setSize(window.innerWidth, window.innerHeight, false);
+// [=============================================================]
+    enableGyroscope() {
+        if (this.inputSystem && this.inputSystem.startDeviceOrientation) {
+            this.inputSystem.startDeviceOrientation();
+        }
+    }
+
+
+// [=============================================================]
+    _onWindowResize(){
+        this.renderer.setSize(window.innerWidth, window.innerHeight, false);
     } 
 
-    onWindowChange(){
+    _onWindowChange(){
         console.log("visibility change");
         if (document.hidden) {
             this.isRunning = false;
@@ -131,10 +207,28 @@ export default class Engine {
             }
         }
     }
+
+// [=============================================================]
+    sleep() {
+        this.isRunning = false;
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+    }
+
+    wake() {
+        if (!this.isRunning) {
+            this.isRunning = true;
+            this.lastTime = performance.now();
+            this.mainLoop();
+        }
+    }
+
 // [=============================================================]
     
 
-    checkWebGLSupport() {
+    _checkWebGLSupport() {
         try {
             const canvas = document.createElement('canvas');
             // console.log("ok");
