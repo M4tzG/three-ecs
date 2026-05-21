@@ -7,10 +7,19 @@
   "type": "module",
   "main": "src/Engine.js",
   "types": "src/Engine.d.ts",
+
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite example",
+    "build": "vite build",
+    "preview": "vite preview"
   },
+
   "peerDependencies": {
     "three": "^0.184.0"
+  },
+
+  "devDependencies": {
+    "three": "^0.184.0",
+    "vite": "^8.0.13"
   }
 }
