@@ -41,7 +41,7 @@ const data = {
             imageName: "kitty",
             transform: { px: 0, py: 0, pz: 0},
             baseHeight: 5,
-            interaction: { isParallaxed: true, isHoverable: false, parallaxFactor: -0.2, isDraggable: false },
+            interaction: { isPlayer: true, isParallaxed: false, isHoverable: false, parallaxFactor: -0.2, isDraggable: false },
             transition: { velocity: 2, acceleration: 1.1, direction: { x: 0, y: -1 }, delay: 1.5  },
         }
     ]
@@ -50,3 +50,7 @@ const data = {
 
 engine.initScene(data);
 
+
+document.getElementById("botao").addEventListener("click", function() {
+  engine.dispose();
+});

@@ -226,8 +226,37 @@ export default class Engine {
     }
 
 // [=============================================================]
-    
+    dispose() {
+        console.log("taki")
 
+        if (this.currentWorld) {
+            console.log("world")
+            this.currentWorld.dispose();
+        }
+
+        if (this.currentScene) {
+            console.log("scene")
+            this.currentScene.clear();
+        }
+
+        if (this.animationFrameId) {
+            console.log("anmid")
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+        this.assets.dispose();
+
+        if (this.renderer) {
+            console.log("renderer")
+            this.renderer.dispose();
+        }
+
+        this.isRunning = false;
+        window.removeEventListener("resize", this.resizeHandler);
+        document.removeEventListener("visibilitychange", this.visibilityHandler);
+    }
+    
+// [=============================================================]
     _checkWebGLSupport() {
         try {
             const canvas = document.createElement('canvas');

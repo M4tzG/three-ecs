@@ -31,4 +31,11 @@ export default class AssetsManager {
     getTexture(name) {
         return this.textures[name];
     }
+    
+    dispose(){
+        console.log("assets")
+        for (const key in this.textures) {
+            this.textures[key].dispose();
+        }
+    }
 }
