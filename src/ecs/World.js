@@ -1,17 +1,14 @@
-import { Query } from "./Query";
+import { Query } from "../utils/Query";
 
 export class World {
     constructor(){
-        this.mainCamera = null;
+
         this.nextEntityId = 0;
         this.entities = new Set();
         this.components = new Map();  // keys : value 
                                     // component class : maps entity ids to component instances
 
         this.systems = [];
-    }
-    setMainCamera(camera){
-        this.mainCamera = camera;
     }
 
     createEntity() {
@@ -53,6 +50,7 @@ export class World {
     }
 
     update(deltaTime){
+        // console.log("aq");
         for (const system of this.systems) {
             system.update(this, deltaTime);
         }

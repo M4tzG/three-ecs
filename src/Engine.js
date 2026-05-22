@@ -1,33 +1,28 @@
 import * as THREE from "three"
+import {
+    InputManager,
+    MainLoop, 
+    AssetsManager,
+    CanvasManager,
+    GraphicsManager
+} from "./Globals/index"
 
 import {
-    InputSystem,
-    EffectSystem,
-    AnimationSystem,
-    PickingSystem,
-    ChainRenderSystem,
-    VerletPhysicsSystem,
-    ConstraintSystem,
-    RenderSystem,
-    PostProcessingSystem,
-    CameraSystem
-} from "./systems/index";
+    RenderSystem
+} from "./systems/index"
 
-import { World } from "./ecs/World";
+import { World } from "./ecs/World"
 import { runScene } from "./run/runScene";
-import { loadAssets } from "./run/loadAssets";
-import { showNoWebGLFallback } from "./ui/fallbacks";
 
-export default class Engine {
+export default class Engine{
     constructor(canvas, options = {}){
-    // ----------------
-        this.canvas = canvas;
-        this.webGL = this._checkWebGLSupport();
 
+        this.currentScene = null;
+        this.currentWorld = null;
     
-    // ----------------
+    // ----------------    
+        this.configs = {
 
-        this.config = {
             renderer: {
                 antialias: options.renderer?.antialias ?? !(options.device?.isMobile ?? false),
                 powerPreference: options.renderer?.powerPreference ?? 'high-performance',
@@ -36,106 +31,37 @@ export default class Engine {
                 clearAlpha: options.renderer?.clearAlpha ?? 0,
                 pixelRatio: options.renderer?.pixelRatio ?? Math.min(window.devicePixelRatio, 2),
             },
-            engine: {
-                maxDeltaTime: options.engine?.maxDeltaTime ?? 0.5,
+            postProcessing: {
+                usePostProcessing: options.usePostProcessing ?? false,
+                effects: options.effects ?? [],
             }
         }
 
-    // ----------------
-
-        this.renderer = null;
-        this.assets = null;
-        this.currentScene = null;
-        this.currentWorld = null;
-        this.inputSystem = null;
-
-        this.lastTime = 0;
-        this.isRunning = false;
-        this.animationFrameId = null;
-
-
-        this.resizeHandler = this._onWindowResize.bind(this);
-        this.visibilityHandler = this._onWindowChange.bind(this);
-
-    }
-
-    async init(assets) {
-
-        if (!this.webGL) {
-            showNoWebGLFallback();
-            return;
-        }
-
         // ----------------
-        try {
-            this.renderer = new THREE.WebGLRenderer({
-            canvas: this.canvas,
-            ...this.config.renderer
-            });
-        } catch (error) {
-            console.error("Falha WebGLRenderer: ", error)
-            showNoWebGLFallback();
-            return;
-        }
 
-        // ----------------
-        try {
-            this.assets = await loadAssets(assets);
-        } catch (error) {
-            console.error("Erro em carregar os assets: ", error);
-        }
+        this.canvas = new CanvasManager(canvas); 
+        this.inputManager = new InputManager();
+        this.mainLoop = new MainLoop();
+        this.assets = new AssetsManager();
+        this.graphics = new GraphicsManager(this.canvas, this.configs);
 
-    // ----------------
-
-        this.renderer.setSize(window.innerWidth, window.innerHeight, false);
-        this.renderer.setPixelRatio(this.config.renderer.pixelRatio);
-        this.renderer.shadowMap.enabled = this.config.renderer.shadows;
-
-        this.renderer.setClearColor(this.config.renderer.clearColor, this.config.renderer.clearAlpha);
-
-    // ----------------       
-
-        window.addEventListener("resize", this.resizeHandler);
-        document.addEventListener("visibilitychange", this.visibilityHandler);
-
-    // ----------------
-
-        this.isRunning = true;
-        this.lastTime = performance.now();
-        this.mainLoop();
+        
     }
 
-    _initSystems(){
-
-
-    // ----------------
-        this.currentWorld.addSystem(this.inputSystem);
-        this.currentWorld.addSystem(new EffectSystem());
-        this.currentWorld.addSystem(new CameraSystem());
-
-    // ----------------
-
-        this.currentWorld.addSystem(new PickingSystem(this.currentScene)); // ta ruim...
-
-
-    // ----------------
-        this.currentWorld.addSystem(new AnimationSystem(this.renderer, this.currentScene));
-
-    // ----------------
-        this.currentWorld.addSystem(new VerletPhysicsSystem());
-        this.currentWorld.addSystem(new ConstraintSystem());
-        this.currentWorld.addSystem(new ChainRenderSystem());
-
-    // ----------------
-        this.currentWorld.addSystem(new RenderSystem(this.renderer, this.currentScene));
-
-    // ----------------
-
-        this.currentWorld.addSystem(new PostProcessingSystem(this.renderer, this.currentScene));
+    async init(assets){
+        try {
+            await this.assets.loadAssets(assets);
+        } catch (error) {
+            console.error("Erro nos assets: ", error);
+        }
+        this.graphics.init();
+        this.canvas.init();
+        this.mainLoop.init();
 
     }
 
-    initScene(data) {
+    initScene(data){
+
         if (this.currentScene) {
             this.currentScene.clear();
         }
@@ -144,128 +70,40 @@ export default class Engine {
             this.currentWorld = null; 
         }
 
-    // ----------------
+// ----------------
         this.currentScene = new THREE.Scene();
         this.currentWorld = new World();
-        this.inputSystem = new InputSystem();
+        this.mainLoop.currentWorld = this.currentWorld
 
-        this._initSystems();
-    // ----------------
-        if (data) {
-            runScene(this.currentWorld, this.currentScene, this.assets, data);
-        }
+
+        this.currentWorld.addSystem(new RenderSystem(this.currentScene, this.graphics));
         
+        // console.log(this.currentWorld.systems)
+        runScene(this.currentWorld, this.currentScene, this.assets, data);
+
     }
 
-
-    mainLoop = () => {
-        if (!this.isRunning) return;
-
-    // ----------------
-        const now = performance.now();
-        let deltaTime = (now - this.lastTime) / 1000;
-        deltaTime = Math.min(deltaTime, this.config.engine.maxDeltaTime);
-
-        this.lastTime = now;
-
-    // ----------------
-        if (this.currentWorld) {
-            this.currentWorld.update(deltaTime);
-        }
-
-    // ----------------
-        this.animationFrameId = requestAnimationFrame(this.mainLoop);
+    sleep(){
+        this.mainLoop.sleep();
     }
-
-
-// [=============================================================]
-    enableGyroscope() {
-        if (this.inputSystem && this.inputSystem.startDeviceOrientation) {
-            this.inputSystem.startDeviceOrientation();
-        }
+    wake(){
+        this.mainLoop.wake();
     }
-
-
-// [=============================================================]
-    _onWindowResize(){
-        this.renderer.setSize(window.innerWidth, window.innerHeight, false);
-    } 
-
-    _onWindowChange(){
-        console.log("visibility change");
-        if (document.hidden) {
-            this.isRunning = false;
-            if (this.animationFrameId) {
-                cancelAnimationFrame(this.animationFrameId);
-                this.animationFrameId = null;
-            }
-        } else {
-            this.lastTime = performance.now(); 
-            if (!this.isRunning) {
-                this.isRunning = true;
-                this.mainLoop();
-            }
-        }
-    }
-
-// [=============================================================]
-    sleep() {
-        this.isRunning = false;
-        if (this.animationFrameId) {
-            cancelAnimationFrame(this.animationFrameId);
-            this.animationFrameId = null;
-        }
-    }
-
-    wake() {
-        if (!this.isRunning) {
-            this.isRunning = true;
-            this.lastTime = performance.now();
-            this.mainLoop();
-        }
-    }
-
-// [=============================================================]
-    dispose() {
-        console.log("taki")
+    
+    dispose(){
 
         if (this.currentWorld) {
-            console.log("world")
             this.currentWorld.dispose();
         }
 
         if (this.currentScene) {
-            console.log("scene")
             this.currentScene.clear();
         }
-
-        if (this.animationFrameId) {
-            console.log("anmid")
-            cancelAnimationFrame(this.animationFrameId);
-            this.animationFrameId = null;
-        }
+        this.mainLoop.dispose();
+        this.canvas.dispose();
         this.assets.dispose();
-
-        if (this.renderer) {
-            console.log("renderer")
-            this.renderer.dispose();
-        }
-
-        this.isRunning = false;
-        window.removeEventListener("resize", this.resizeHandler);
-        document.removeEventListener("visibilitychange", this.visibilityHandler);
+        this.inputManager.dispose();
     }
-    
-// [=============================================================]
-    _checkWebGLSupport() {
-        try {
-            const canvas = document.createElement('canvas');
-            // console.log("ok");
-            return !!(window.WebGLRenderingContext && 
-                (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
-        } catch (e) {
-            return false;
-        }
-    }
+
 
 }
