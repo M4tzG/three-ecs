@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import Engine from "../src/Engine.js";
+
+
 const canvas = document.getElementById("app")
 
 const engine = new Engine(canvas);
@@ -43,9 +45,18 @@ const data = {
     sprites: [
         {
             imageName: "kitty",
+            collision: true,
             transform: { px: 0, py: 0, pz: 0, scale: 5},
-            // baseHeight: 5,
-            // interaction: { isPlayer: true, isParallaxed: false, isHoverable: false, parallaxFactor: -0.2, isDraggable: false },
+            mouseInteraction: { isParallaxed: false, isHoverable: false, parallaxFactor: -0.2, isDraggable: false },
+            rigidBody: { bodyType: "static"}
+            // transition: { velocity: 2, acceleration: 1.1, direction: { x: 0, y: -1 }, delay: 1.5  },
+        },
+        {
+            imageName: "kitty",
+            collision: true,
+            transform: { px: 0, py: 5, pz: 0, scale: 5},
+            mouseInteraction: { isParallaxed: false, isHoverable: false, parallaxFactor: -0.2, isDraggable: false },
+            rigidBody: { bodyType: "dynamic", mass: 1, velocity: v3(0,1,0)}
             // transition: { velocity: 2, acceleration: 1.1, direction: { x: 0, y: -1 }, delay: 1.5  },
         }
     ]

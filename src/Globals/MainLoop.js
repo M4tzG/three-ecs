@@ -57,6 +57,7 @@ export class MainLoop{
     }
 
     dispose(){
+        console.log("mainloop");
         if (this.animationFrameId) {
             cancelAnimationFrame(this.animationFrameId);
             this.animationFrameId = null;

@@ -1,2 +1,5 @@
 export { SpriteRenderer } from "./SpriteRenderer"
 export { Transform } from "./Transform"
+export { CircleHitbox } from "./CircleHitbox"
+export { MouseInteraction } from "./MouseInteraction"
+export { RigidBody } from "./RigidBody"

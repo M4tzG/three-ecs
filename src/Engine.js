@@ -8,7 +8,10 @@ import {
 } from "./Globals/index"
 
 import {
-    RenderSystem
+    RenderSystem,
+    EffectSystem,
+    CollisionSystem,
+    PhysicSystem
 } from "./systems/index"
 
 import { World } from "./ecs/World"
@@ -40,10 +43,11 @@ export default class Engine{
         // ----------------
 
         this.canvas = new CanvasManager(canvas); 
-        this.inputManager = new InputManager();
+        
         this.mainLoop = new MainLoop();
         this.assets = new AssetsManager();
         this.graphics = new GraphicsManager(this.canvas, this.configs);
+        this.inputManager = new InputManager(this.graphics);
 
         
     }
@@ -54,6 +58,7 @@ export default class Engine{
         } catch (error) {
             console.error("Erro nos assets: ", error);
         }
+        this.inputManager.init();
         this.graphics.init();
         this.canvas.init();
         this.mainLoop.init();
@@ -74,8 +79,10 @@ export default class Engine{
         this.currentScene = new THREE.Scene();
         this.currentWorld = new World();
         this.mainLoop.currentWorld = this.currentWorld
-
-
+        
+        this.currentWorld.addSystem(new PhysicSystem());
+        this.currentWorld.addSystem(new CollisionSystem(this.inputManager, this.currentScene));
+        this.currentWorld.addSystem(new EffectSystem(this.currentScene, this.inputManager));
         this.currentWorld.addSystem(new RenderSystem(this.currentScene, this.graphics));
         
         // console.log(this.currentWorld.systems)
@@ -103,6 +110,7 @@ export default class Engine{
         this.canvas.dispose();
         this.assets.dispose();
         this.inputManager.dispose();
+        this.graphics.dispose();
     }
 
 

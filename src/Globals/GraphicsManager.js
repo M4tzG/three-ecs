@@ -2,11 +2,16 @@ import * as THREE from "three"
 export class GraphicsManager {
     constructor(canvas, configs){
         this.camera = this.createCamera();
+
         this.canvas = canvas;
         this.width = this.canvas.getWidth();
         this.height = this.canvas.getHeight();
+
         this.configs = configs;
         this.renderer = null;
+        this.composer = null;
+
+        this.postProcessingPass = null;
     }
     init(){
  
@@ -28,7 +33,6 @@ export class GraphicsManager {
     }
 
     createCamera(){
-
         const camera = new THREE.PerspectiveCamera(
             75, // fov
             window.innerWidth / window.innerHeight,
@@ -43,6 +47,14 @@ export class GraphicsManager {
     //   // teste apenas
     draw(scene){
         this.renderer.render(scene, this.camera);
+    }
+
+
+    dispose(){
+        console.log("graphics")
+        if (this.renderer) {
+            this.renderer.dispose();
+        }
     }
 
 }
