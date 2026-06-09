@@ -5,6 +5,7 @@ import {
     MouseInteraction,
     CircleHitbox,
     RigidBody,
+    RectHitbox,
 } from "../components/index"
 
 export function createSprite(world, scene, assets, config) {
@@ -39,10 +40,17 @@ export function createSprite(world, scene, assets, config) {
    // ==================
     const material = new THREE.SpriteMaterial({ map: texture, transparent: true, alphaTest: 0.5 });
     const sprite = new THREE.Sprite(material);
-    const radius = transform.scale / 2.5;
+    const radius = transform.scale / 2.5;  
+    
+    const aspecto = imageWidth / imageHeight;
 
+    // Se o scale define a largura base
+    const width = transform.scale;
+    const height = transform.scale / aspecto;
+    
+    
     scene.add(sprite);
-
+    // console.log(caixaDeContorno)
 
     // ==================
     // ECS 
@@ -57,7 +65,8 @@ export function createSprite(world, scene, assets, config) {
         
 
         
-        collision && new CircleHitbox(radius, "sprite")
+        // collision && new CircleHitbox(radius, "sprite")
+        collision && new RectHitbox(width, height, "sprite")
     ]
 
     components
