@@ -8,6 +8,7 @@ export class RenderSystem extends System {
         this.graphics = graphics;
         this.renderer = this.graphics.renderer;
         this.camera = this.graphics.camera;
+        this.composer = this.graphics.composer
         this.scene = scene;
 
     }
@@ -35,7 +36,10 @@ export class RenderSystem extends System {
             
             sprite.material.rotation = transform.rotation.z;
         }
-        // console.log(this.camera)
-        this.renderer.render(this.scene, this.camera);
+        // console.log(this.composer)
+        if (!this.composer){
+            this.renderer.render(this.scene, this.camera);
+        } else this.composer.render();
+        
     }
 }

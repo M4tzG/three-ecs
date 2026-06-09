@@ -14,7 +14,7 @@ const configs = {
     postProcessing: {
         pincushion: { active: true, strength: 0.15 },
         crt: { 
-            active: true, 
+            active: false, 
             scanlineIntensity: 0.08, 
             scanlineCount: 800.0, 
             vignetteDarkness: 1.0, 

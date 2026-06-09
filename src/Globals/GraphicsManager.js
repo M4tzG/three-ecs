@@ -1,5 +1,9 @@
 import * as THREE from "three"
 import { SHADERS } from "../constants/Shaders";
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 
 export class GraphicsManager {
     constructor(canvas, configs){
@@ -13,7 +17,7 @@ export class GraphicsManager {
         this.renderer = null;
         this.composer = null;
         
-
+        // console.log(configs)
         this.rendererConfigs = configs.renderer;
         this.cameraConfig = configs.camera;
         this.ppConfig = configs.postProcessing;
@@ -72,34 +76,31 @@ export class GraphicsManager {
     }
 
     initPostProcessing(scene) {
+        const configs = this.ppConfig
         
-        if (!this.ppConfigs) {
-            console.log("akjs")
+        if (!configs) {
+            console.log("akjs");
             return; 
         }
         this.composer = new EffectComposer(this.renderer);
         
-        // 1. Passa a cena normal
-        const renderPass = new RenderPass(this.scene, this.camera);
+        const renderPass = new RenderPass(scene, this.camera);
         this.composer.addPass(renderPass);
 
-        // 2. Passa o Uber Shader (CRT + Pincushion combinados)
         this.shadersPass = new ShaderPass(SHADERS);
         
-        // Aplica as configurações iniciais recebidas
         const uniforms = this.shadersPass.uniforms;
-        uniforms["pincushionActive"].value = ppConfigs.pincushion.active ? 1.0 : 0.0;
-        uniforms["pincushionStrength"].value = ppConfigs.pincushion.strength || 1.0;
+        uniforms["pincushionActive"].value = this.ppConfig.pincushion.active ? 1.0 : 0.0;
+        uniforms["pincushionStrength"].value = this.ppConfig.pincushion.strength || 1.0;
         
-        uniforms["crtActive"].value = ppConfigs.crt.active ? 1.0 : 0.0;
-        uniforms["scanlineIntensity"].value = ppConfigs.crt.scanlineIntensity || 0.08;
-        uniforms["scanlineCount"].value = ppConfigs.crt.scanlineCount || 800.0;
-        uniforms["vignetteDarkness"].value = ppConfigs.crt.vignetteDarkness || 1.0;
-        uniforms["aberrationAmount"].value = ppConfigs.crt.aberrationAmount || 0.01;
+        uniforms["crtActive"].value = this.ppConfig.crt.active ? 1.0 : 0.0;
+        uniforms["scanlineIntensity"].value = this.ppConfig.crt.scanlineIntensity || 0.08;
+        uniforms["scanlineCount"].value = this.ppConfig.crt.scanlineCount || 800.0;
+        uniforms["vignetteDarkness"].value = this.ppConfig.crt.vignetteDarkness || 1.0;
+        uniforms["aberrationAmount"].value = this.ppConfig.crt.aberrationAmount || 0.01;
 
         this.composer.addPass(this.shadersPass);
 
-        // 3. Output final (ajuda na correção de cores em versões recentes do Three)
         const outputPass = new OutputPass();
         this.composer.addPass(outputPass);
     }
@@ -114,6 +115,9 @@ export class GraphicsManager {
         console.log("graphics")
         if (this.renderer) {
             this.renderer.dispose();
+        }
+        if (this.compose){
+            this.composer.dispose();
         }
     }
 

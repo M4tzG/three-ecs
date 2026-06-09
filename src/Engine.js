@@ -43,10 +43,10 @@ export default class Engine{
             },
             postProcessing: {
                 pincushion: { 
-                    active: options.postProcessing?.pincushion.active ?? true, 
+                    active: options.postProcessing?.pincushion.active ?? false, 
                     strength: options.postProcessing?.pincushion.active ?? 0.15 },
                 crt: { 
-                    active: options.postProcessing?.crt.active ?? true, 
+                    active: options.postProcessing?.crt.active ?? false, 
                     scanlineIntensity: options.postProcessing?.crt.scanlineIntensity ?? 0.08, 
                     scanlineCount: options.postProcessing?.crt.scanlineCount ?? 800.0, 
                     vignetteDarkness: options.postProcessing?.crt.vignetteDarkness ?? 1.0, 
