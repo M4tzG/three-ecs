@@ -3,15 +3,53 @@ import Engine from "../src/Engine.js";
 
 
 const canvas = document.getElementById("app")
-
-const engine = new Engine(canvas);
+const configs = {
+    camera: {
+        type: 'perspective', // ou 'orthographic'
+        fov: 75,
+        near: 0.1,
+        far: 1000,
+        positionZ: 5
+    },
+    postProcessing: {
+        pincushion: { active: true, strength: 0.15 },
+        crt: { 
+            active: true, 
+            scanlineIntensity: 0.08, 
+            scanlineCount: 800.0, 
+            vignetteDarkness: 1.0, 
+            aberrationAmount: 0.01 
+        }
+    }
+};
+const engine = new Engine(canvas, configs);
 
 // engine.init();
+const graphicsConfigs = {
+    camera: {
+        type: 'perspective', // ou 'orthographic'
+        fov: 75,
+        near: 0.1,
+        far: 1000,
+        positionZ: 5
+    },
+    postProcessing: {
+        pincushion: { active: true, strength: 0.15 },
+        crt: { 
+            active: true, 
+            scanlineIntensity: 0.08, 
+            scanlineCount: 800.0, 
+            vignetteDarkness: 1.0, 
+            aberrationAmount: 0.01 
+        }
+    }
+};
 
-await engine.init([
+
+const assets = [
     ["kitty", "/assets/kitty.png"]
-]);
-
+]
+await engine.init(assets)
 // engine.initScene();
 
 
