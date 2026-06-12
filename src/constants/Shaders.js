@@ -44,6 +44,8 @@ export const SHADERS = {
                 float distanceSq = dot(centeredUv, centeredUv); 
                 float distortion = 1.0 + pincushionStrength * distanceSq; 
                 finalUv = centeredUv * distortion + 0.5;
+                
+                // Se saiu da tela, pinta de preto
                 if (finalUv.x < 0.0 || finalUv.x > 1.0 || finalUv.y < 0.0 || finalUv.y > 1.0) {
                     gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
                     return; 
@@ -54,15 +56,19 @@ export const SHADERS = {
 
             // --- CRT ---
             if (crtActive > 0.5) {
+                // Aberração cromática usa o finalUv (imagem distorcida)
                 float r = texture2D(tDiffuse, vec2(finalUv.x + aberrationAmount, finalUv.y)).r;
                 float g = texture2D(tDiffuse, finalUv).g; 
                 float b = texture2D(tDiffuse, vec2(finalUv.x - aberrationAmount, finalUv.y)).b;
                 color = vec4(r, g, b, 1.0);
 
-                float wave = sin(finalUv.y * scanlineCount - time * 10.0);
+                // --- CORREÇÃO AQUI ---
+                // Usa o vUv ORIGINAL (reto) para as scanlines não entortarem!
+                float wave = sin(vUv.y * scanlineCount - time * 10.0);
                 color.rgb -= (wave * 0.5 + 0.5) * scanlineIntensity;
 
-                vec2 centerDist = finalUv - 0.5;
+                // Usa o vUv ORIGINAL (reto) para a vignette ser um círculo/elipse perfeito
+                vec2 centerDist = vUv - 0.5;
                 float vignette = length(centerDist);
                 color.rgb *= 1.0 - smoothstep(0.4, 0.8, vignette) * vignetteDarkness;
             } else {

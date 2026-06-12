@@ -1,4 +1,6 @@
 import { Query } from "../utils/Query";
+import { Destroy } from "../components";
+import { DestroySystem } from "../systems";
 
 export class World {
     constructor(){
@@ -57,18 +59,26 @@ export class World {
     }
 
     dispose() {
-        // Destroi todas as entidades
+        // 1. Marca TODO MUNDO para ser destruído
         for (const entity of this.entities) {
-            this.destroyEntity(entity);
+            this.addComponent(entity, new Destroy());
         }
 
-        // Limpa systems
+        // 2. Roda o DestroySystem (supondo que você consiga achá-lo na sua lista de systems)
+        // Isso vai garantir que todas as texturas e materiais do Three.js deem o .dispose()
+        const destroySystem = this.systems.find(s => s instanceof DestroySystem);
+        if (destroySystem) {
+            destroySystem.update(this); 
+        }
+
+        // 3. Limpa systems
         for (const system of this.systems) {
             if (system.dispose) {
                 system.dispose();
             }
         }
-        // Clear collections
+
+        // 4. Clear collections (agora sim, de forma segura!)
         this.entities.clear();
         this.components.clear();
         this.systems = [];

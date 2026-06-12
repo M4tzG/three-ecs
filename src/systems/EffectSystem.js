@@ -16,6 +16,8 @@ export class EffectSystem extends System {
         for(const e of entities){
             const transform = world.getComponent(e, Transform);
             const interaction = world.getComponent(e, MouseInteraction);
+
+            if (!transform || !interaction) continue;
             if (interaction.isParallaxed) { 
                 
                 if (transform.initialX === undefined) {

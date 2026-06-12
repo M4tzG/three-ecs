@@ -14,7 +14,8 @@ export class PhysicSystem extends System {
         for (const e of entities) {
             const transform = world.getComponent(e, Transform);   
             const body = world.getComponent(e, RigidBody);
-
+            
+            if (!transform || !body) continue;
             body.velocity.y += (this.gravity * body.invMass) * deltaTime;
 
             transform.position.x += body.velocity.x * deltaTime;

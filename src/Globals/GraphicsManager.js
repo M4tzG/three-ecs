@@ -19,18 +19,38 @@ export class GraphicsManager {
         
         // console.log(configs)
         this.rendererConfigs = configs.renderer;
-        this.cameraConfig = configs.camera;
-        this.ppConfig = configs.postProcessing;
+        this.cameraConfig = null;
+        this.ppConfig = null;
 
-        this.camera = this.initCamera();
-
+        this.camera = null;
         this.postProcessingPass = null;
     }
 
 
     init(){
         this.initRenderer()
-        this.initCamera();
+        // this.initCamera();
+    }
+
+    setup(data, scene){
+        this.cameraConfig = {
+                type: data.camera?.type ?? 'perspective', // ou 'orthographic'
+                fov: data.camera?.fov ?? 75,
+                near: data.camera?.near ?? 0.1,
+                far: data.camera?.far ?? 1000,
+                positionZ: data.camera?.positionZ ?? 5
+            };
+        
+        this.camera = this.initCamera();
+
+        const configs = data.postProcessing
+        
+        if (configs) {
+            this.ppConfig = data.postProcessing;
+            this.initPostProcessing(scene)
+            return; 
+        }
+
     }
 
 
@@ -62,7 +82,7 @@ export class GraphicsManager {
                 this.cameraConfig.far
             );
         } else if (this.cameraConfig.type === 'orthographic') {
-            const frustumSize = cameraConfig.frustumSize || 10;
+            const frustumSize = this.cameraConfig.frustumSize || 10;
             camera = new THREE.OrthographicCamera(
                 frustumSize * aspect / -2, frustumSize * aspect / 2, 
                 frustumSize / 2, frustumSize / -2, 
@@ -76,12 +96,7 @@ export class GraphicsManager {
     }
 
     initPostProcessing(scene) {
-        const configs = this.ppConfig
-        
-        if (!configs) {
-            console.log("akjs");
-            return; 
-        }
+
         this.composer = new EffectComposer(this.renderer);
         
         const renderPass = new RenderPass(scene, this.camera);
@@ -106,9 +121,9 @@ export class GraphicsManager {
     }
 
     //   // teste apenas
-    draw(scene){
-        this.renderer.render(scene, this.camera);
-    }
+    // draw(scene){
+    //     this.renderer.render(scene, this.camera);
+    // }
 
 
     dispose(){

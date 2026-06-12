@@ -7,11 +7,14 @@ import {
     GraphicsManager
 } from "./Globals/index"
 
+
 import {
     RenderSystem,
     EffectSystem,
     CollisionSystem,
-    PhysicSystem
+    PhysicSystem,
+    PlayerControlSystem,
+    DestroySystem
 } from "./systems/index"
 
 import { World } from "./ecs/World"
@@ -33,25 +36,6 @@ export default class Engine{
                 clearColor: options.renderer?.clearColor ?? 0x000000,
                 clearAlpha: options.renderer?.clearAlpha ?? 0,
                 pixelRatio: options.renderer?.pixelRatio ?? Math.min(window.devicePixelRatio, 2),
-            },
-            camera: {
-                type: options.camera?.type ?? 'perspective',
-                fov: options.camera?.fov ?? 75,
-                near: options.camera?.near ?? 0.1,
-                far: options.camera?.far ?? 1000,
-                positionZ: options.camera?.positionZ ?? 5
-            },
-            postProcessing: {
-                pincushion: { 
-                    active: options.postProcessing?.pincushion.active ?? false, 
-                    strength: options.postProcessing?.pincushion.active ?? 0.15 },
-                crt: { 
-                    active: options.postProcessing?.crt.active ?? false, 
-                    scanlineIntensity: options.postProcessing?.crt.scanlineIntensity ?? 0.08, 
-                    scanlineCount: options.postProcessing?.crt.scanlineCount ?? 800.0, 
-                    vignetteDarkness: options.postProcessing?.crt.vignetteDarkness ?? 1.0, 
-                    aberrationAmount: options.postProcessing?.crt.aberrationAmount ?? 0.01 
-                }
             }
         }
 
@@ -65,6 +49,10 @@ export default class Engine{
         this.inputManager = new InputManager(this.graphics);
 
         
+    }
+
+    testando(){
+
     }
 
     async init(assets){
@@ -95,13 +83,16 @@ export default class Engine{
         this.currentWorld = new World();
         this.mainLoop.currentWorld = this.currentWorld
 
-        this.graphics.initPostProcessing(this.currentScene)
+        this.graphics.setup(data, this.currentScene);
         
+
+        this.currentWorld.addSystem(new PlayerControlSystem(this.inputManager));
         this.currentWorld.addSystem(new PhysicSystem());
         this.currentWorld.addSystem(new CollisionSystem(this.inputManager, this.currentScene));
+    
         this.currentWorld.addSystem(new EffectSystem(this.currentScene, this.inputManager));
         this.currentWorld.addSystem(new RenderSystem(this.currentScene, this.graphics));
-        
+        this.currentWorld.addSystem(new DestroySystem(this.currentScene))
         // console.log(this.currentWorld.systems)
         runScene(this.currentWorld, this.currentScene, this.assets, data);
 

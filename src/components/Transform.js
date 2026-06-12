@@ -17,6 +17,10 @@ export class Transform extends Component {
             Number.isFinite(configs.rz) ? configs.rz : 0
         );
 
-        this.scale = Number.isFinite(configs.scale) ? configs.scale : 1;
+        this.scale = new THREE.Vector3(
+            Number.isFinite(configs.scale) ? configs.scale : 1,
+            Number.isFinite(configs.scale) ? configs.scale : 1,
+            Number.isFinite(configs.scale) ? configs.scale : 1
+        );
     }
 }

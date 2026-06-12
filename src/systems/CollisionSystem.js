@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { System } from "../ecs/System"
 import { Query } from "../utils/Query";
-import { CircleHitbox, RectHitbox, Transform, RigidBody } from "../components/index";
+import { CircleHitbox, RectHitbox, Transform, RigidBody, PlayerController, Destroy } from "../components/index";
 
 export class CollisionSystem extends System {
     constructor(input, scene){
@@ -21,6 +21,7 @@ export class CollisionSystem extends System {
             const transform_A = world.getComponent(entityA, Transform);
             const rb_A = world.getComponent(entityA, RigidBody);
             
+            if (!transform_A || !rb_A) continue;
             // ================
             let hitbox_A = world.getComponent(entityA, CircleHitbox);
             let typeA = 'circle';
@@ -36,6 +37,7 @@ export class CollisionSystem extends System {
 
                 let hitbox_B = world.getComponent(entityB, CircleHitbox);
                 let typeB = 'circle';
+                if (!transform_B || !rb_B) continue;
                 if (!hitbox_B) {
                     hitbox_B = world.getComponent(entityB, RectHitbox);
                     typeB = 'rect';
@@ -172,6 +174,7 @@ export class CollisionSystem extends System {
                 // ==========================================
                 
                 if (isColliding) {
+                    
                     const totalInvMass = rb_A.invMass + rb_B.invMass;
                     if (totalInvMass === 0) continue; 
 
@@ -186,6 +189,29 @@ export class CollisionSystem extends System {
                         const moveRatioB = rb_B.invMass / totalInvMass;
                         transform_B.position.x -= nx * penetration * moveRatioB;
                         transform_B.position.y -= ny * penetration * moveRatioB;
+                    }
+
+                    // ==========================================
+                    // DETECÇÃO DE CHÃO (IS GROUNDED)
+                    // ==========================================
+                    
+                    // Tenta pegar o componente de controle das duas entidades
+                    const ctrlA = world.getComponent(entityA, PlayerController);
+                    const ctrlB = world.getComponent(entityB, PlayerController);
+
+                    if (ctrlA) {
+                        // Se a entidade A é o Player e o ny > 0, significa que a colisão 
+                        // empurrou o Player para CIMA. Logo, ele bateu os pés no chão.
+                        if (ny > 0.1) { 
+                            ctrlA.isGrounded = true;
+                        }
+                    }
+                    if (ctrlB) {
+                        // Se a entidade B é o Player, a normal está invertida para ele.
+                        // Se ny < -0.1, significa que o Player B foi empurrado para CIMA.
+                        if (ny < -0.1) {
+                            ctrlB.isGrounded = true;
+                        }
                     }
 
                     // Velocidade

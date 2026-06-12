@@ -9,7 +9,15 @@ export class InputManager{
             dx: 0,
             dy: 0
         };
+        this.actions = {
+            'LEFT':  ['KeyA', 'ArrowLeft'],
+            'RIGHT': ['KeyD', 'ArrowRight'],
+            'JUMP':  ['Space', 'ArrowUp', 'KeyW'],
+            'DOWN':  ['KeyS', 'ArrowDown']
+        };
+
         this.gyro = { x: 0, y: 0 }
+        this.keys = {};
         this.handlers = {};
     }
     init(){
@@ -19,9 +27,18 @@ export class InputManager{
             this.mouse.dx = e.movementX;
             this.mouse.dy = e.movementY;
         };
-
+        
+        // mouse
         this.handlers.mousedown = () => this.mouse.isDown = true;
         this.handlers.mouseup = () => this.mouse.isDown = false;
+
+        // teclado
+        this.handlers.keydown = (e) => { this.keys[e.code] = true; };
+        this.handlers.keyup = (e) => { this.keys[e.code] = false; };
+
+
+        window.addEventListener('keydown', this.handlers.keydown);
+        window.addEventListener('keyup', this.handlers.keyup);
 
         window.addEventListener('mousemove', this.handlers.mousemove);
         window.addEventListener('mousedown', this.handlers.mousedown);
@@ -44,9 +61,17 @@ export class InputManager{
 
         window.addEventListener('deviceorientation', this.handlers.deviceorientation);
     }
+    isActionActive(actionName) {
+        const mappedKeys = this.actions[actionName];
+        if (!mappedKeys) return false;
+        
+        return mappedKeys.some(key => this.keys[key]); 
+    }
     
     dispose() {
         console.log("input");
+        window.removeEventListener('keydown', this.handlers.keydown);
+        window.removeEventListener('keyup', this.handlers.keyup);
         window.removeEventListener('mousemove', this.handlers.mousemove);
         window.removeEventListener('mousedown', this.handlers.mousedown);
         window.removeEventListener('mouseup', this.handlers.mouseup);
