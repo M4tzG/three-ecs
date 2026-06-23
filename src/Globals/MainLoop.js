@@ -40,6 +40,7 @@ export class MainLoop{
     }
 
     // [=============================================================]
+    
     sleep() {
         this.isRunning = false;
         if (this.animationFrameId) {

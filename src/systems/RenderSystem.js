@@ -34,18 +34,13 @@ export class RenderSystem extends System {
 
             if (controller) {
                 if (controller.facingRight) {
-                    // Estado Normal (olhando para a direita)
                     sprite.material.map.repeat.x = 1;
                     sprite.material.map.offset.x = 0;
                 } else {
-                    // Estado Espelhado (olhando para a esquerda)
                     sprite.material.map.repeat.x = -1;
                     sprite.material.map.offset.x = 1;
                 }
                 
-                // Opcional: dependendo da versão do Three.js, você pode não precisar 
-                // do needsUpdate = true todo frame só para alterar o offset/repeat. 
-                // Teste comentar essa linha abaixo depois para ver se ganha performance!
                 sprite.material.map.needsUpdate = true; 
             }
 

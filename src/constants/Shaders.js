@@ -1,9 +1,3 @@
-import * as THREE from "three";
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-
 export const SHADERS = {
     uniforms: {
         "tDiffuse": { value: null },
@@ -45,11 +39,11 @@ export const SHADERS = {
                 float distortion = 1.0 + pincushionStrength * distanceSq; 
                 finalUv = centeredUv * distortion + 0.5;
                 
-                // Se saiu da tela, pinta de preto
-                if (finalUv.x < 0.0 || finalUv.x > 1.0 || finalUv.y < 0.0 || finalUv.y > 1.0) {
-                    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-                    return; 
-                }
+                // pinta d preto se sair da tela
+                // if (finalUv.x < 0.0 || finalUv.x > 1.0 || finalUv.y < 0.0 || finalUv.y > 1.0) {
+                //     gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+                //     return; 
+                // }
             }
 
             vec4 color = vec4(0.0);
@@ -62,12 +56,9 @@ export const SHADERS = {
                 float b = texture2D(tDiffuse, vec2(finalUv.x - aberrationAmount, finalUv.y)).b;
                 color = vec4(r, g, b, 1.0);
 
-                // --- CORREÇÃO AQUI ---
-                // Usa o vUv ORIGINAL (reto) para as scanlines não entortarem!
                 float wave = sin(vUv.y * scanlineCount - time * 10.0);
                 color.rgb -= (wave * 0.5 + 0.5) * scanlineIntensity;
 
-                // Usa o vUv ORIGINAL (reto) para a vignette ser um círculo/elipse perfeito
                 vec2 centerDist = vUv - 0.5;
                 float vignette = length(centerDist);
                 color.rgb *= 1.0 - smoothstep(0.4, 0.8, vignette) * vignetteDarkness;

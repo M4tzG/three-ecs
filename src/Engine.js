@@ -51,9 +51,6 @@ export default class Engine{
         
     }
 
-    testando(){
-
-    }
 
     async init(assets){
         try {
@@ -73,7 +70,7 @@ export default class Engine{
         if (this.currentScene) {
             this.currentScene.clear();
         }
-        if (this.currentWorld) { // inputSystem -> windowListener acumula
+        if (this.currentWorld) {
             this.currentWorld.dispose();
             this.currentWorld = null; 
         }
@@ -88,6 +85,7 @@ export default class Engine{
 
         this.currentWorld.addSystem(new PlayerControlSystem(this.inputManager));
         this.currentWorld.addSystem(new PhysicSystem());
+        // this.currentWorld.addSystem(new VerletSystem(this.inputManager, this.graphics))
         this.currentWorld.addSystem(new CollisionSystem(this.inputManager, this.currentScene));
     
         this.currentWorld.addSystem(new EffectSystem(this.currentScene, this.inputManager));

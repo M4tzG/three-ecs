@@ -8,13 +8,10 @@ import { createPlayer } from "../factories/createPlayer";
 
 export function runScene(world, scene, assets, data)  {
     
-    // if (data.postProcessing) {
-    //     createPostProcessing(world, data.postProcessing);
-    // }
-    // data.camera?.forEach(config => createCamera(world, config));
+
     data.sprites?.forEach(config => createSprite(world, scene, assets, config));
     data.player?.forEach(config => createPlayer(world, scene, assets, config));
     // data.animatedSprites?.forEach(config => createAnimatedSprite(world, scene, assets, config));
-    // data.chains?.forEach(config => createChain(world, scene, assets, config));
+    // data.verlet?.forEach(config => createChain(world, scene, assets, config));
     // data.example?.forEach(config => createExemple(scene));
 }

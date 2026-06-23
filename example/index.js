@@ -11,7 +11,10 @@ const engine = new Engine(canvas, configs);
 // engine.init();
 
 const assets = [
-    ["kitty", "/assets/kitty.png"]
+    ["kitty", "/assets/kitty.png"],
+    ["imageTop", "/assets/chainTop.png"],
+    ["imageBottom", "/assets/chainBotton.png"],
+    ["imageFull", "/assets/chainFull.png"]
 ]
 await engine.init(assets)
 
@@ -61,7 +64,20 @@ const data = {
         //     mouseInteraction: { isParallaxed: false, isHoverable: false, parallaxFactor: -0.2, isDraggable: false },
         //     rigidBody: { bodyType: "dynamic", mass: 1, velocity: v3(0,1,0)}
         // }
-    ]
+    ],
+    // verlet: [
+    //     {
+    //         mode: "fixed-one",
+    //         x: 0, y: 3,          // âncora topo
+    //         linkCount: 10,
+    //         linkLength: 0.4,
+    //         textures: {
+    //             top:    "imageTop",
+    //             middle: "imageFull",
+    //             bottom: "imageBottom",
+    //         }
+    //     }
+    // ]
     // exemple:[]
 }
 
