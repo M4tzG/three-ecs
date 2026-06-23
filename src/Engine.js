@@ -14,6 +14,10 @@ import {
     CollisionSystem,
     PhysicSystem,
     PlayerControlSystem,
+    ChainRenderSystem,
+    ConstraintSystem,
+    VerletPhysicsSystem,
+    ChainInteractionSystem,
     DestroySystem
 } from "./systems/index"
 
@@ -85,7 +89,10 @@ export default class Engine{
 
         this.currentWorld.addSystem(new PlayerControlSystem(this.inputManager));
         this.currentWorld.addSystem(new PhysicSystem());
-        // this.currentWorld.addSystem(new VerletSystem(this.inputManager, this.graphics))
+        this.currentWorld.addSystem(new VerletPhysicsSystem());
+        this.currentWorld.addSystem(new ConstraintSystem());  
+        this.currentWorld.addSystem(new ChainInteractionSystem(this.inputManager, this.graphics)); 
+        this.currentWorld.addSystem(new ChainRenderSystem());
         this.currentWorld.addSystem(new CollisionSystem(this.inputManager, this.currentScene));
     
         this.currentWorld.addSystem(new EffectSystem(this.currentScene, this.inputManager));

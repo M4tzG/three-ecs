@@ -6,4 +6,6 @@ export { RigidBody } from "./RigidBody"
 export { RectHitbox } from "./RectHitbox"
 export { PlayerController } from "./PlayerController"
 export { Destroy } from "./Destroy"
-// export { Verlet } from "./Verlet"
+export { VerletNode } from "./VerletNode"
+export { Constraint } from "./Constraint"
+export { ChainLink } from "./ChainLink";
