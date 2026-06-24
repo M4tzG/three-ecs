@@ -13,7 +13,7 @@ export class CircleHitbox extends Component {
         this.mask = 0;
         maskArray.forEach(maskString => {
             if (Layers[maskString]) {
-                this.mask = this.mask | Layers[maskString]; // junta os numeros com bitwise OR
+                this.mask = this.mask | Layers[maskString];
             }
         });
 

@@ -4,13 +4,10 @@ import {
     VerletNode,
     Constraint,
     ChainLink,
-    CircleHitbox,      // <-- IMPORTADO
-    MouseInteraction   // <-- IMPORTADO
+    CircleHitbox,
+    MouseInteraction
 } from "../components/index";
 
-// ─── Cache de geometria/material por baseHeight ───────────────────────────────
-// Geometria e material são compartilhados entre todos os elos do mesmo tamanho.
-// Isso evita criar centenas de objetos iguais na GPU.
 
 const visualCacheOdd  = new Map();
 const visualCacheEven = new Map();
@@ -93,7 +90,6 @@ function createLinkMesh(isOdd, oddVisual, evenVisual, scale) {
         mesh = new THREE.Mesh(oddVisual.geometry, oddVisual.material);
         mesh.renderOrder = 2;
     } else {
-        // Elos pares têm back + front para que os elos ímpares pareçam passar POR DENTRO
         mesh = new THREE.Group();
 
         const back  = new THREE.Mesh(evenVisual.geometry, evenVisual.matBack);
@@ -111,25 +107,6 @@ function createLinkMesh(isOdd, oddVisual, evenVisual, scale) {
 
 // ─── createChain ─────────────────────────────────────────────────────────────
 
-/**
- * Cria uma corrente Verlet na cena e registra todas as entidades no ECS.
- *
- * @param {World}         world
- * @param {THREE.Scene}   scene
- * @param {AssetsManager} assets
- * @param {object}        configs
- *
- * @param {number}        [configs.baseHeight=1]       Altura base visual dos elos
- * @param {object}        configs.chainConfig
- * @param {THREE.Vector3} configs.chainConfig.startPos Âncora do topo (sempre fixo)
- * @param {THREE.Vector3} configs.chainConfig.endPos   Posição final.
- *                                                      Se isPinnedEnd=true → âncora fixa.
- *                                                      Se false → só define o spawn dos nós.
- * @param {boolean}       [configs.chainConfig.isPinnedEnd=true]  Fixa o último nó?
- * @param {number}        [configs.chainConfig.numLinks=10]        Nº de elos
- * @param {number}        [configs.chainConfig.scale=1]            Escala visual
- * @param {number}        [configs.chainConfig.gravity=9.8]        (reservado para uso futuro)
- */
 export function createChain(world, scene, assets, configs) {
     const {
         baseHeight  = 1,
@@ -174,23 +151,18 @@ export function createChain(world, scene, assets, configs) {
         world.addComponent(entity, new VerletNode(spawnPos.x, spawnPos.y, spawnPos.z, isPinned));
         world.addComponent(entity, new ChainLink(mesh, isOdd));
         
-        // ==========================================
-        // NOVOS COMPONENTES PARA INTERAÇÃO
-        // ==========================================
-        // O raio do hitbox pode ser metade da altura base visual
+
         const hitRadius = (baseHeight * scale) / 1.5; 
         
-        // Passamos uma layer "interaction" ou "default", não importa tanto se não for colidir com física
+        
         world.addComponent(entity, new CircleHitbox(hitRadius, "default", [])); 
         
-        // Habilita que essa entidade pode sofrer hover e drag do mouse
         world.addComponent(entity, new MouseInteraction({ 
             isHoverable: true, 
             canDragged: true 
         }));
         // ==========================================
 
-        // ── Restrição com o nó anterior
         if (previousEntity !== null) {
             const constraintEntity = world.createEntity();
             world.addComponent(constraintEntity, new Constraint(previousEntity, entity, linkDistance));

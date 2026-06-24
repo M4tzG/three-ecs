@@ -54,7 +54,7 @@ const data = {
             imageName: "kitty",
             collision: true,
             transform: { px: 0, py: -2, pz: 0, scale: 5},
-            mouseInteraction: { isParallaxed: false, isHoverable: false, parallaxFactor: -0.2, isDraggable: false },
+            mouseInteraction: { isParallaxed: true, isHoverable: false, parallaxFactor: -0.2, isDraggable: false },
             rigidBody: { bodyType: "static"}
         },
         // {ada

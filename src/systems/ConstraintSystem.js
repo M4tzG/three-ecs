@@ -18,7 +18,7 @@ export class ConstraintSystem extends System {
     update(world, deltaTime) {
         const entities = Query.entitiesWith(world, Constraint);
 
-        // Roda N iterações por frame — quanto mais, mais rígida a corrente
+        // n iteracaoes por frame
         for (let iter = 0; iter < this.iterations; iter++) {
             for (const c of entities) {
                 const constraint = world.getComponent(c, Constraint);
@@ -36,7 +36,6 @@ export class ConstraintSystem extends System {
                 const wSum = wA + wB;
                 if (wSum === 0) continue;
 
-                // BUG CORRIGIDO: era "distance" (undefined) → "constraint.distance"
                 const error = currentDist - constraint.distance;
                 const correction = (error / currentDist) * this.stiffness;
 

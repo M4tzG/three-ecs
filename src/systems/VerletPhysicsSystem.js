@@ -15,17 +15,16 @@ export class VerletPhysicsSystem extends System {
     }
 
     update(world, deltaTime) {
-        const dt = Math.min(deltaTime, 0.030); // clamp: evita explosão em tabs em bg
+        const dt = Math.min(deltaTime, 0.030); // evita explosao 
 
         const entities = Query.entitiesWith(world, VerletNode);
         for (const e of entities) {
             const node = world.getComponent(e, VerletNode);
 
-            // BUG CORRIGIDO: nós fixos não devem se mover
             if (node.isPinned) continue;
 
             this._velocity.subVectors(node.position, node.oldPosition);
-            this._velocity.multiplyScalar(0.95); // damping
+            this._velocity.multiplyScalar(0.99); // damping (atrito)
 
             node.oldPosition.copy(node.position);
 

@@ -53,7 +53,7 @@ export class CollisionSystem extends System {
                 let nx = 0, ny = 0, penetration = 0;
 
                 // ==========================================
-                // FASE DE DETECÇÃO (Acha a Normal e Penetração)
+                // DETECCAO
                 // ==========================================
                 
                 if (typeA === 'circle' && typeB === 'circle') {
@@ -133,7 +133,7 @@ export class CollisionSystem extends System {
                     }
                 }
                 else if (typeA === 'rect' && typeB === 'circle') {
-                    // É a exata mesma lógica do de cima, mas invertendo a direção da normal
+
                     const rectX = transform_A.position.x;
                     const rectY = transform_A.position.y;
                     const halfW = hitbox_A.width / 2;
@@ -162,17 +162,14 @@ export class CollisionSystem extends System {
                             }
                         } else {
                             const distance = Math.sqrt(distanceSquared);
-                            nx = -(dx / distance); // Inverte
-                            ny = -(dy / distance); // Inverte
+                            nx = -(dx / distance); // inverte
+                            ny = -(dy / distance); // inverte
                             penetration = hitbox_B.radius - distance;
                         }
                     }
                 }
 
-                // ==========================================
-                // FASE DE RESOLUÇÃO (Seu código original)
-                // ==========================================
-                
+                // COLISAO
                 if (isColliding) {
                     
                     const totalInvMass = rb_A.invMass + rb_B.invMass;
@@ -192,10 +189,9 @@ export class CollisionSystem extends System {
                     }
 
                     // ==========================================
-                    // DETECÇÃO DE CHÃO (IS GROUNDED)
+                    // IS GROUNDED
                     // ==========================================
-                    
-                    // Tenta pegar o componente de controle das duas entidades
+                
                     const ctrlA = world.getComponent(entityA, PlayerController);
                     const ctrlB = world.getComponent(entityB, PlayerController);
 
@@ -222,7 +218,6 @@ export class CollisionSystem extends System {
 
                     if (velAlongNormal > 0) continue;
 
-                    // troquei a variável "j" por "jImpulse" para não dar conflito com o "j" do seu for loop
                     const jImpulse = -(velAlongNormal) / totalInvMass;
 
                     if (rb_A.invMass > 0) {
@@ -238,7 +233,7 @@ export class CollisionSystem extends System {
             }
 
             // ==========================================
-            // DEBUG RENDERER
+            // DEBUG 
             // ==========================================
             if (!hitbox_A.debugMesh) {
                 if (typeA === 'circle') {
@@ -252,7 +247,7 @@ export class CollisionSystem extends System {
     }
 
     createDebugCircle(hitbox, transform, color = 0x00ff00) {
-        const segments = 32; // Diminuí um pouco de 64 para 32 pra ficar mais leve na sua cena
+        const segments = 32;
         const points = [];
         for (let i = 0; i <= segments; i++) {
             const theta = (i / segments) * Math.PI * 2;

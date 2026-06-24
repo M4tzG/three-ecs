@@ -38,7 +38,7 @@ export class PlayerControlSystem extends System {
                 body.velocity.y = controller.jumpForce; 
                 controller.isGrounded = false;
                 // world.addComponent(e, new Destroy());
-                // console.log("sad", world.hasComponent(e, Destroy))
+                // console.log("asd", world.hasComponent(e, Destroy))
             }
 
             if (!controller.isGrounded) {

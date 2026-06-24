@@ -24,17 +24,14 @@ export class ChainRenderSystem extends System {
             if (!link.mesh) continue;
 
             if (node.nextNode) {
-                // Posição = meio entre este nó e o próximo
+
                 link.mesh.position.lerpVectors(node.position, node.nextNode.position, 0.5);
 
-                // Direção do segmento
                 _target.subVectors(node.nextNode.position, node.position);
 
-                // Ângulo no plano XY (corrente 2D em cena 3D)
                 const angle = Math.atan2(_target.x, -_target.y);
 
                 if (link.isOdd) {
-                    // Elos ímpares: girados 90° para dar ilusão de profundidade
                     link.mesh.rotation.set(0, 0, angle + Math.PI / 2);
                 } else {
                     // link.mesh.rotation.set(0, 0, angle);
@@ -42,7 +39,6 @@ export class ChainRenderSystem extends System {
                 }
             } else {
                 const angle = Math.atan2(_target.x, -_target.y);
-                // Último nó (sem próximo): só atualiza posição
                 link.mesh.position.copy(node.position + node.position/1.8);
                 link.mesh.rotation.set(0, 0, angle + Math.PI / 2);
             }
