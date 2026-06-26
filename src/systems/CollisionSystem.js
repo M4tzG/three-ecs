@@ -1,7 +1,13 @@
 import * as THREE from 'three';
 import { System } from "../ecs/System"
 import { Query } from "../utils/Query";
-import { CircleHitbox, RectHitbox, Transform, RigidBody, PlayerController, Destroy } from "../components/index";
+import { 
+    CircleHitbox, 
+    RectHitbox, 
+    Transform, 
+    RigidBody, 
+    PlayerController, 
+    Destroy } from "../components/index";
 
 export class CollisionSystem extends System {
     constructor(input, scene){

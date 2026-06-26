@@ -1,6 +1,18 @@
 import * as THREE from "three";
 import Engine from "../src/Engine.js";
 
+import {
+    RenderSystem,
+    EffectSystem,
+    CollisionSystem,
+    PhysicSystem,
+    PlayerControlSystem,
+    ChainRenderSystem,
+    ConstraintSystem,
+    VerletPhysicsSystem,
+    ChainInteractionSystem,
+    DestroySystem
+} from "../src/systems/index"
 
 const canvas = document.getElementById("app")
 const configs = {
@@ -80,7 +92,21 @@ const data = {
     // exemple:[]
 }
 
-engine.initScene(data);
+engine.initScene(data, (world, scene, engineRefs) => {
+
+    world.addSystem(new PlayerControlSystem(engineRefs.inputManager));
+    world.addSystem(new PhysicSystem());
+    world.addSystem(new VerletPhysicsSystem());
+    world.addSystem(new ConstraintSystem());  
+    world.addSystem(new ChainInteractionSystem(engineRefs.inputManager, engineRefs.graphics)); 
+    world.addSystem(new ChainRenderSystem());
+    world.addSystem(new CollisionSystem(engineRefs.inputManager, scene));
+
+    world.addSystem(new EffectSystem(scene, engineRefs.inputManager));
+    world.addSystem(new RenderSystem(scene, engineRefs.graphics));
+    world.addSystem(new DestroySystem(scene))
+    
+});
 
 
 document.getElementById("botao").addEventListener("click", function() {
