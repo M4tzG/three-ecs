@@ -14,6 +14,7 @@ import {
     DestroySystem
 } from "../src/systems/index"
 
+
 const canvas = document.getElementById("app")
 const configs = {
 
