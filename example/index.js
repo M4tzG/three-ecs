@@ -25,6 +25,7 @@ const engine = new Engine(canvas, configs);
 
 const assets = [
     ["kitty", "/assets/kitty.png"],
+    ["ground", "/assets/ground.png"],
     ["imageTop", "/assets/chainTop.png"],
     ["imageBottom", "/assets/chainBotton.png"],
     ["imageFull", "/assets/chainFull.png"]
@@ -55,7 +56,7 @@ const data = {
         {
             imageName: "kitty",
             collision: true,
-            transform: { px: 0, py: 5, pz: 0, scale: 5},
+            transform: { px: -4, py: 5, pz: 0, scale: 5},
             mouseInteraction: { isParallaxed: false, isHoverable: false, parallaxFactor: -0.2, isDraggable: false },
             rigidBody: { bodyType: "dynamic", mass: 1, velocity: v3(0,1,0)},
             controller: {speed: 3, jumpForce: 2}
@@ -64,10 +65,10 @@ const data = {
 
     sprites: [
         {
-            imageName: "kitty",
+            imageName: "ground",
             collision: true,
-            transform: { px: 0, py: -2, pz: 0, scale: 5},
-            mouseInteraction: { isParallaxed: true, isHoverable: false, parallaxFactor: -0.2, isDraggable: false },
+            transform: { px: -4, py: -4, pz: 0, scale: 5},
+            mouseInteraction: { isParallaxed: false, isHoverable: false, parallaxFactor: -0.2, isDraggable: false },
             rigidBody: { bodyType: "static"}
         },
         // {ada
@@ -82,8 +83,8 @@ const data = {
         {
             baseHeight: 0.5,
             chainConfig: {
-                startPos: new THREE.Vector3(0, 3, 0),
-                endPos:   new THREE.Vector3(1, -4, 0),
+                startPos: new THREE.Vector3(5, 3, 0),
+                endPos:   new THREE.Vector3(4, -4, 0),
                 isPinnedEnd: false,
                 numLinks: 10,
                 scale: 3,
