@@ -1,47 +1,63 @@
-import { Transform, Mesh2D, ThreeView } from "../components/index";
-
-import { System } from "../ecs/System";
-import { Query } from "../ecs/Query";
-
+import { System } from "../ecs/System"
+import { Query } from "../utils/Query";
+import { Transform, SpriteRenderer, PlayerController } from "../components/index";
 
 export class RenderSystem extends System {
-
-    constructor(renderer, scene){
+    constructor(scene, graphics){
         super();
-        this.renderer = renderer;
+        this.graphics = graphics;
+        this.renderer = this.graphics.renderer;
+        this.camera = this.graphics.camera;
+        this.composer = this.graphics.composer;
         this.scene = scene;
-        this.camera = null;
-        this._cachedData = null;
+
     }
 
     update(world, deltaTime){
-        this.camera = world.mainCamera;
+        const entities = Query.entitiesWith(world, Transform, SpriteRenderer);
 
-        const entities = Query.entitiesWith(world, Transform, Mesh2D, ThreeView);
-
-        for (const e of entities) {
+        for(const e of entities){
             const transform = world.getComponent(e, Transform);
-            const mesh = world.getComponent(e, Mesh2D);
-            const view = world.getComponent(e, ThreeView);
+            const spriteRenderer = world.getComponent(e, SpriteRenderer);
+            const controller = world.getComponent(e, PlayerController)
 
-            const sprite = view.obj;
+            if (!transform || !spriteRenderer ) continue;
 
+            const sprite = spriteRenderer.obj;
+            
+            
             sprite.position.set(
                 transform.position.x, 
                 transform.position.y, 
                 transform.position.z
             );
 
+            if (controller) {
+                if (controller.facingRight) {
+                    sprite.material.map.repeat.x = 1;
+                    sprite.material.map.offset.x = 0;
+                } else {
+                    sprite.material.map.repeat.x = -1;
+                    sprite.material.map.offset.x = 1;
+                }
+                
+                sprite.material.map.needsUpdate = true; 
+            }
+
             sprite.scale.set(
-                mesh.width * transform.scale, 
-                mesh.height * transform.scale, 
+                transform.scale.x, 
+                transform.scale.y, 
                 1 
             );
+
             
             sprite.material.rotation = transform.rotation.z;
-
+            
         }
-        // esta no pos-processamento
-        // this.renderer.render(this.scene, this.camera);
+        // console.log(this.composer)
+        if (!this.composer){
+            this.renderer.render(this.scene, this.camera);
+        } else this.composer.render();
+        
     }
 }

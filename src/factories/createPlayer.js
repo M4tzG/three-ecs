@@ -6,9 +6,10 @@ import {
     CircleHitbox,
     RigidBody,
     RectHitbox,
+    PlayerController
 } from "../components/index"
 
-export function createSprite(world, scene, assets, config) {
+export function createPlayer(world, scene, assets, config) {
    // ==================
     // configs
    // ==================
@@ -17,7 +18,8 @@ export function createSprite(world, scene, assets, config) {
         collision = false,
         transform = {},
         mouseInteraction = {},
-        rigidBody = {}
+        rigidBody = {},
+        controller = {}
     } = config;
 
 
@@ -52,13 +54,12 @@ export function createSprite(world, scene, assets, config) {
     
     
     scene.add(sprite);
-    // console.log(caixaDeContorno)
 
     // ==================
     // ECS 
    // ==================
     const entity = world.createEntity();
-
+    // console.log("kajdjasd", controller);
     const components = [
         new MouseInteraction(mouseInteraction),
         new RigidBody(rigidBody),
@@ -66,7 +67,7 @@ export function createSprite(world, scene, assets, config) {
         new SpriteRenderer(sprite, imageWidth, imageHeight),
         
 
-        
+        new PlayerController(controller),
         // collision && new CircleHitbox(radius, "sprite")
         collision && new RectHitbox(width, height, "sprite")
     ]

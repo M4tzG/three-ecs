@@ -1,171 +1,175 @@
 import * as THREE from "three";
 
 import {
-    Transform,
     VerletNode,
     Constraint,
-    ThreeView,
-    Interaction,
-    Input,
-    Gravity,
-} from "../components/index"
+    ChainLink,
+    CircleHitbox,
+    MouseInteraction
+} from "../components/index";
 
 
-
-const visualCacheOdd = new Map();
+const visualCacheOdd  = new Map();
 const visualCacheEven = new Map();
 
 export function disposeChainCaches() {
-    visualCacheOdd.forEach(set => {
-        set.geometry.dispose();
-        set.material.dispose();
+    visualCacheOdd.forEach(({ geometry, material }) => {
+        geometry.dispose();
+        material.dispose();
     });
     visualCacheOdd.clear();
-    
-    visualCacheEven.forEach(set => {
-        set.geometry.dispose();
-        set.material.dispose();
+
+    visualCacheEven.forEach(({ geometry, matBack, matFront }) => {
+        geometry.dispose();
+        matBack.dispose();
+        matFront.dispose();
     });
     visualCacheEven.clear();
 }
 
+// ─── Helpers de cache ────────────────────────────────────────────────────────
+
 function getOddVisualSet(assets, baseHeight) {
-    const cacheKey = `chainLinkOdd_${baseHeight}`;
-    
-    if (visualCacheOdd.has(cacheKey)) {
-        return visualCacheOdd.get(cacheKey);
-    }
+    const key = `odd_${baseHeight}`;
+    if (visualCacheOdd.has(key)) return visualCacheOdd.get(key);
 
-    const matOptions = { 
-        transparent: true, 
-        side: THREE.DoubleSide, 
-        depthWrite: false, 
-        alphaTest: 0.5 
+    const tex = assets.getTexture("imageFull");
+    tex.minFilter = THREE.NearestFilter;
+    tex.magFilter = THREE.NearestFilter;
+    tex.premultiplyAlpha = true;
+
+    const set = {
+        geometry: new THREE.PlaneGeometry(
+            baseHeight * (tex.image.width / tex.image.height),
+            baseHeight
+        ),
+        material: new THREE.MeshBasicMaterial({
+            map: tex, transparent: true,
+            side: THREE.DoubleSide, depthWrite: false, alphaTest: 0.5
+        })
     };
 
-    const texFull = assets.getTexture("chainLinkOddFull");
-    texFull.minFilter = THREE.NearestFilter;
-    texFull.magFilter = THREE.NearestFilter;
-    texFull.premultiplyAlpha = true;
-
-    const geoFull = new THREE.PlaneGeometry(
-        baseHeight * (texFull.image.width / texFull.image.height), 
-        baseHeight
-    );
-
-    const visualSet = { 
-        geometry: geoFull, 
-        material: new THREE.MeshBasicMaterial({ map: texFull, ...matOptions }) 
-    };
-
-    visualCacheOdd.set(cacheKey, visualSet);
-    return visualSet;
+    visualCacheOdd.set(key, set);
+    return set;
 }
 
 function getEvenVisualSet(assets, baseHeight) {
-    const cacheKey = `chainLinkEven_${baseHeight}`;
-    
-    if (visualCacheEven.has(cacheKey)) {
-        return visualCacheEven.get(cacheKey);
-    }
+    const key = `even_${baseHeight}`;
+    if (visualCacheEven.has(key)) return visualCacheEven.get(key);
 
-    const matOptions = { 
-        transparent: true, 
-        side: THREE.DoubleSide, 
-        depthWrite: false, 
-        alphaTest: 0.5 
-    };
+    const texBack  = assets.getTexture("imageBottom");
+    const texFront = assets.getTexture("imageTop");
 
-    const texBack = assets.getTexture("chainLinkEvenBack");
-    const texFront = assets.getTexture("chainLinkEvenFront");
-
-    [texBack, texFront].forEach(tex => {
-        tex.minFilter = THREE.NearestFilter;
-        tex.magFilter = THREE.NearestFilter;
-        tex.premultiplyAlpha = true;
+    [texBack, texFront].forEach(t => {
+        t.minFilter = THREE.NearestFilter;
+        t.magFilter = THREE.NearestFilter;
+        t.premultiplyAlpha = true;
     });
 
-    const geoEven = new THREE.PlaneGeometry(
-        baseHeight * (texFront.image.width / texFront.image.height), 
+    const geo = new THREE.PlaneGeometry(
+        baseHeight * (texFront.image.width / texFront.image.height),
         baseHeight
     );
 
-    const visualSet = { 
-        geometry: geoEven, 
-        matBack: new THREE.MeshBasicMaterial({ map: texBack, ...matOptions }), 
-        matFront: new THREE.MeshBasicMaterial({ map: texFront, ...matOptions }) 
+    const set = {
+        geometry: geo,
+        matBack:  new THREE.MeshBasicMaterial({ map: texBack,  transparent: true, side: THREE.DoubleSide, depthWrite: false, alphaTest: 0.5 }),
+        matFront: new THREE.MeshBasicMaterial({ map: texFront, transparent: true, side: THREE.DoubleSide, depthWrite: false, alphaTest: 0.5 }),
     };
 
-    visualCacheEven.set(cacheKey, visualSet);
-    return visualSet;
+    visualCacheEven.set(key, set);
+    return set;
 }
+
+// ─── createLinkMesh ───────────────────────────────────────────────────────────
 
 function createLinkMesh(isOdd, oddVisual, evenVisual, scale) {
-    let linkVisual;
+    let mesh;
 
     if (isOdd) {
-        linkVisual = new THREE.Mesh(oddVisual.geometry, oddVisual.material);
-        linkVisual.renderOrder = 2;
+        mesh = new THREE.Mesh(oddVisual.geometry, oddVisual.material);
+        mesh.renderOrder = 2;
     } else {
-        linkVisual = new THREE.Group();
+        mesh = new THREE.Group();
 
-        const meshBack = new THREE.Mesh(evenVisual.geometry, evenVisual.matBack);
-        meshBack.renderOrder = 1;
+        const back  = new THREE.Mesh(evenVisual.geometry, evenVisual.matBack);
+        back.renderOrder = 1;
 
-        const meshFront = new THREE.Mesh(evenVisual.geometry, evenVisual.matFront);
-        meshFront.renderOrder = 3;
+        const front = new THREE.Mesh(evenVisual.geometry, evenVisual.matFront);
+        front.renderOrder = 3;
 
-        linkVisual.add(meshBack);
-        linkVisual.add(meshFront);
+        mesh.add(back, front);
     }
 
-    linkVisual.scale.set(scale, scale, scale);
-    return linkVisual;
+    mesh.scale.setScalar(scale);
+    return mesh;
 }
 
-export function createChain (world, scene, assets, configs) {
+// ─── createChain ─────────────────────────────────────────────────────────────
+
+export function createChain(world, scene, assets, configs) {
     const {
-        baseHeight = 1,
-        transform = {},
-        interaction = {},
+        baseHeight  = 1,
         chainConfig = {}
     } = configs;
 
-    const oddVisual = getOddVisualSet(assets, baseHeight);
+    const {
+        startPos,
+        endPos,
+        isPinnedEnd = true,
+        numLinks    = 10,
+        scale       = 1,
+    } = chainConfig;
+
+    if (!startPos || !endPos) {
+        console.error("createChain: chainConfig.startPos e chainConfig.endPos são obrigatórios");
+        return;
+    }
+
+    const oddVisual  = getOddVisualSet(assets, baseHeight);
     const evenVisual = getEvenVisualSet(assets, baseHeight);
 
-    const totalDistance = chainConfig.startPos.distanceTo(chainConfig.endPos);
-    const linkDistance = totalDistance / chainConfig.numLinks;
+    const totalDistance = startPos.distanceTo(endPos);
+    const linkDistance  = totalDistance / numLinks;
 
     let previousEntity = null;
-    let previousNode = null;
+    let previousNode   = null;
+
+    for (let i = 0; i < numLinks; i++) {
+        const isOdd        = (i % 2 !== 0);
+        const spawnPercent = i / numLinks;
+        const spawnPos     = new THREE.Vector3().lerpVectors(startPos, endPos, spawnPercent);
+
+        const isPinned = (i === 0) || (i === numLinks - 1 && isPinnedEnd);
+
+        // ── Mesh visual
+        const mesh = createLinkMesh(isOdd, oddVisual, evenVisual, scale);
+        scene.add(mesh);
+
+        // ── Entidade ECS
+        const entity = world.createEntity();
+        world.addComponent(entity, new VerletNode(spawnPos.x, spawnPos.y, spawnPos.z, isPinned));
+        world.addComponent(entity, new ChainLink(mesh, isOdd));
         
 
-
-    for (let i = 0; i < chainConfig.numLinks; i++) {
-        const isOdd = (i % 2 !== 0);
-        const spawnPercent = i / chainConfig.numLinks;
-        const spawnPos = new THREE.Vector3().lerpVectors(chainConfig.startPos, chainConfig.endPos, spawnPercent);
-        const isPinned = (i === 0 || i === chainConfig.numLinks - 1);
-
-        const linkVisual = createLinkMesh(isOdd, oddVisual, evenVisual, chainConfig.scale);
-        scene.add(linkVisual);
-
-        const linkEntity = world.createEntity();
-        world.addComponent(linkEntity, new VerletNode(spawnPos.x, spawnPos.y, spawnPos.z, isPinned));
-        world.addComponent(linkEntity, new Gravity(chainConfig.gravity));
-        world.addComponent(linkEntity, new ThreeView(linkVisual, isOdd));
-        world.addComponent(linkEntity, new Transform(transform));
-        world.addComponent(linkEntity, new Input());
-        world.addComponent(linkEntity, new Interaction(interaction));
+        const hitRadius = (baseHeight * scale) / 1.5; 
+        
+        
+        world.addComponent(entity, new CircleHitbox(hitRadius, "default", [])); 
+        
+        world.addComponent(entity, new MouseInteraction({ 
+            isHoverable: true, 
+            canDragged: true 
+        }));
+        // ==========================================
 
         if (previousEntity !== null) {
             const constraintEntity = world.createEntity();
-            world.addComponent(constraintEntity, new Constraint(previousEntity, linkEntity, linkDistance));
-            previousNode.nextNode = world.getComponent(linkEntity, VerletNode);
+            world.addComponent(constraintEntity, new Constraint(previousEntity, entity, linkDistance));
+            previousNode.nextNode = world.getComponent(entity, VerletNode);
         }
 
-        previousEntity = linkEntity;
-        previousNode = world.getComponent(linkEntity, VerletNode);
+        previousEntity = entity;
+        previousNode   = world.getComponent(entity, VerletNode);
     }
 }

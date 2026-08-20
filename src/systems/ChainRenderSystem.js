@@ -1,47 +1,46 @@
-import { VerletNode, ThreeView } from "../components/index";
+import { VerletNode, ChainLink } from "../components/index";
 
 import { System } from "../ecs/System";
-import { Query } from "../ecs/Query";
+import { Query } from "../utils/Query";
 
+import * as THREE from "three";
+
+const _target = new THREE.Vector3();
+const _up     = new THREE.Vector3(0, 1, 0);
 
 export class ChainRenderSystem extends System {
-    
-// [=============================================================]   
-    // posicao do VerletPhysicsSystem -> posiçao do mesh
-    // +
-    // ajusta rotaçao
-// [=============================================================]  
 
     constructor() {
         super();
     }
 
     update(world, deltaTime) {
-
-        const entities = Query.entitiesWith(world, VerletNode, ThreeView);
+        const entities = Query.entitiesWith(world, VerletNode, ChainLink);
 
         for (const e of entities) {
             const node = world.getComponent(e, VerletNode);
-            const view = world.getComponent(e, ThreeView);
+            const link = world.getComponent(e, ChainLink);
 
-            const img = view.obj;
+            if (!link.mesh) continue;
 
-            if (img) {
+            if (node.nextNode) {
 
-                img.position.copy(node.position);
+                link.mesh.position.lerpVectors(node.position, node.nextNode.position, 0.5);
 
-                if (node.nextNode) {
-                    img.lookAt(node.nextNode.position);
+                _target.subVectors(node.nextNode.position, node.position);
+
+                const angle = Math.atan2(_target.x, -_target.y);
+
+                if (link.isOdd) {
+                    link.mesh.rotation.set(0, 0, angle + Math.PI / 2);
+                } else {
+                    // link.mesh.rotation.set(0, 0, angle);
+                    link.mesh.rotation.set(0, 0, angle + Math.PI / 2);
                 }
-                img.rotateY(Math.PI / 2);
-                
-                // if (view.isOdd) {
-                //     img.rotateZ(Math.PI);
-                //     img.rotateY(Math.PI / 2);
-                // } else {
-                    
-                // }
-                
+            } else {
+                const angle = Math.atan2(_target.x, -_target.y);
+                link.mesh.position.copy(node.position + node.position/1.8);
+                link.mesh.rotation.set(0, 0, angle + Math.PI / 2);
             }
         }
     }

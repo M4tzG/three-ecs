@@ -1,17 +1,16 @@
-import { Query } from "./Query";
+import { Query } from "../utils/Query";
+import { Destroy } from "../components";
+import { DestroySystem } from "../systems";
 
 export class World {
     constructor(){
-        this.mainCamera = null;
+
         this.nextEntityId = 0;
         this.entities = new Set();
         this.components = new Map();  // keys : value 
                                     // component class : maps entity ids to component instances
 
         this.systems = [];
-    }
-    setMainCamera(camera){
-        this.mainCamera = camera;
     }
 
     createEntity() {
@@ -53,24 +52,29 @@ export class World {
     }
 
     update(deltaTime){
+        // console.log("aq");
         for (const system of this.systems) {
             system.update(this, deltaTime);
         }
     }
 
     dispose() {
-        // Destroi todas as entidades
+        // todos vao ser destruidos
         for (const entity of this.entities) {
-            this.destroyEntity(entity);
+            this.addComponent(entity, new Destroy());
         }
 
-        // Limpa systems
+        // destroySystemanual
+        const destroySystem = this.systems.find(s => s instanceof DestroySystem);
+        if (destroySystem) {
+            destroySystem.update(this); 
+        }
+
         for (const system of this.systems) {
             if (system.dispose) {
                 system.dispose();
             }
         }
-        // Clear collections
         this.entities.clear();
         this.components.clear();
         this.systems = [];

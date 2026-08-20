@@ -1,13 +1,12 @@
 import { Component } from "../ecs/Component";
 
 
-export class Interaction extends Component {
-
+export class MouseInteraction extends Component {
     constructor(configs = {}) {
         super();
         // onHold
-        this.isPlayer = configs.isPlayer ?? false;
         this.isMobile = configs.isMobile ?? false;
+        
         this.isHovered = false; 
         this.isHoverable = configs.isHoverable ?? false;
 

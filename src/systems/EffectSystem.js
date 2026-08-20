@@ -1,33 +1,23 @@
-import { Interaction, 
-        Transform, 
-        Input } from "../components/index";  
-
-import { System } from "../ecs/System"; 
-import { Query } from "../ecs/Query";  
-
-
-
-
+import { System } from "../ecs/System"
+import { Query } from "../utils/Query";
+import { MouseInteraction, Transform } from "../components/index";
 
 export class EffectSystem extends System {
-
-// [=============================================================]   
-    // por hora apenas implementaçao de um parallax
-// [=============================================================]   
-
-    constructor() {
+    constructor(scene, input){
         super();
-        this._cachedData = null;
+        this.input = input;
+        this.scene = scene;
+
     }
 
-    update(world, deltaTime) {
+    update(world, deltaTime){
+        const entities = Query.entitiesWith(world, Transform, MouseInteraction);
 
-        const entities = Query.entitiesWith(world, Interaction, Transform, Input);
-        for (const e of entities){
-            const interaction = world.getComponent(e, Interaction);
+        for(const e of entities){
             const transform = world.getComponent(e, Transform);
-            const input = world.getComponent(e, Input);
+            const interaction = world.getComponent(e, MouseInteraction);
 
+            if (!transform || !interaction) continue;
             if (interaction.isParallaxed) { 
                 
                 if (transform.initialX === undefined) {
@@ -35,8 +25,8 @@ export class EffectSystem extends System {
                     transform.initialY = transform.position.y;
                 }
 
-                const inputX = interaction.isMobile ? input.gyro.x : input.mouse.x;
-                const inputY = interaction.isMobile ? input.gyro.y : input.mouse.y;
+                const inputX = this.input.mouse.x;
+                const inputY = this.input.mouse.y;
 
                 const targetX = transform.initialX + (inputX * interaction.parallaxFactor);
                 const targetY = transform.initialY + (inputY * interaction.parallaxFactor);
@@ -45,10 +35,10 @@ export class EffectSystem extends System {
 
                 transform.position.x += (targetX - transform.position.x) * lerpSpeed;   
                 transform.position.y += (targetY - transform.position.y) * lerpSpeed;
+
             }
+
         }
+        // console.log(this.input.mouse.x, this.input.mouse.y);
     }
 }
-
-
-

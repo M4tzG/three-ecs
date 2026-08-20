@@ -1,18 +1,6 @@
-import { Input } from "../components/Input";
-
-import { System } from "../ecs/System"; 
-import { Query } from "../ecs/Query";   
-
-
-export class InputSystem extends System {
-    
-// [=============================================================]   
-    // pega os inputs do mouse, um delta para interaçao e click
-// [=============================================================]   
-
-    constructor(camera) {
-        super();
-        this.camera = camera;
+export class InputManager{
+    constructor(graphics){
+        this.camera = graphics.camera;
         
         this.mouse = {
             x: 0,
@@ -21,27 +9,40 @@ export class InputSystem extends System {
             dx: 0,
             dy: 0
         };
-        this.gyro = { x: 0, y: 0 }
-        this.handlers = {};
+        this.actions = {
+            'LEFT':  ['KeyA', 'ArrowLeft'],
+            'RIGHT': ['KeyD', 'ArrowRight'],
+            'JUMP':  ['Space', 'ArrowUp', 'KeyW'],
+            'DOWN':  ['KeyS', 'ArrowDown']
+        };
 
-        this.initListeners();
+        this.gyro = { x: 0, y: 0 }
+        this.keys = {};
+        this.handlers = {};
     }
-    initListeners() {
+    init(){
         this.handlers.mousemove = (e) => {
             this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
             this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
             this.mouse.dx = e.movementX;
             this.mouse.dy = e.movementY;
         };
-
+        
+        // mouse
         this.handlers.mousedown = () => this.mouse.isDown = true;
         this.handlers.mouseup = () => this.mouse.isDown = false;
+
+        // teclado
+        this.handlers.keydown = (e) => { this.keys[e.code] = true; };
+        this.handlers.keyup = (e) => { this.keys[e.code] = false; };
+
+
+        window.addEventListener('keydown', this.handlers.keydown);
+        window.addEventListener('keyup', this.handlers.keyup);
 
         window.addEventListener('mousemove', this.handlers.mousemove);
         window.addEventListener('mousedown', this.handlers.mousedown);
         window.addEventListener('mouseup', this.handlers.mouseup);
-
-        
     }
 
     startDeviceOrientation() {
@@ -60,32 +61,22 @@ export class InputSystem extends System {
 
         window.addEventListener('deviceorientation', this.handlers.deviceorientation);
     }
-
+    isActionActive(actionName) {
+        const mappedKeys = this.actions[actionName];
+        if (!mappedKeys) return false;
+        
+        return mappedKeys.some(key => this.keys[key]); 
+    }
+    
     dispose() {
+        console.log("input");
+        window.removeEventListener('keydown', this.handlers.keydown);
+        window.removeEventListener('keyup', this.handlers.keyup);
         window.removeEventListener('mousemove', this.handlers.mousemove);
         window.removeEventListener('mousedown', this.handlers.mousedown);
         window.removeEventListener('mouseup', this.handlers.mouseup);
         if (this.handlers.deviceorientation) {
             window.removeEventListener('deviceorientation', this.handlers.deviceorientation);
-        }
-    }
-
-    update(world, deltaTime) {
-
-        const entities = Query.entitiesWith(world, Input);
-
-        for (const e of entities) {
-            const input = world.getComponent(e, Input);
-
-            input.mouse.x = this.mouse.x;
-            input.mouse.y = this.mouse.y;
-            input.mouse.deltaX = this.mouse.dx;
-            input.mouse.deltaY = this.mouse.dy;
-            input.mouse.isDown = this.mouse.isDown;
-
-            // console.log(input.mouse.deltaX, input.mouse.deltaY)
-            input.gyro.x = this.gyro.x;
-            input.gyro.y = this.gyro.y;
         }
     }
 }
